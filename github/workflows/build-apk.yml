@@ -1,0 +1,47 @@
+name: Build Siam Live TV APK
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+
+      - name: Install Android SDK
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Extract project
+        run: |
+          unzip -o SiamLiveTV_Android_Project-1.zip
+          ls -la SiamLiveTV_Android
+          ls -la SiamLiveTV_Android/app
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          gradle-version: '8.7'
+
+      - name: Build APK
+        run: |
+          cd SiamLiveTV_Android
+          gradle :app:assembleDebug --stacktrace --no-daemon
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: SiamLiveTV-APK
+          path: SiamLiveTV_Android/app/build/outputs/apk/debug/app-debug.apk
